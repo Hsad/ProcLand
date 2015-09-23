@@ -9,6 +9,7 @@
 	var plane;
 	var planeWidth = 1;
 	var planeHeight = 1;
+	var planeSubDiv = 100;
 	var lastTime = Date.now();
 	var currentTime = 0;
 	var deltaTime = 0;
@@ -16,6 +17,11 @@
 	var mouseVec;
 	//var projector;
 	var raycaster; //?
+	var directionalLight;
+	var pointLight;
+	
+	var vertIndex = 0;
+	var verts;
 	
 
 function init(){
@@ -28,10 +34,19 @@ function init(){
 	camControls = new THREE.OrbitControls(camera);
 	camControls.addEventListener( 'change', render);
 	
-	geometry = new THREE.PlaneGeometry(planeWidth,planeHeight);
+	geometry = new THREE.PlaneGeometry(planeWidth,planeHeight,planeSubDiv,planeSubDiv);  //range is 0 to 10200 or x0-100 y0-100
 	material = new THREE.MeshBasicMaterial( { color: 0x19A81E } );
 	plane = new THREE.Mesh( geometry, material );
 	scene.add( plane );
+	
+	directionalLight = new THREE.DirectionalLight( 0xf0000f, 1 );
+	directionalLight.position.set( 0, 1, 0 );
+	directionalLight.rotation.y = 0.3;
+	scene.add( directionalLight );
+	
+	pointLight = new THREE.PointLight( 0xff0000, 1, 100 );
+	pointLight.position.set( 0, 0, 2 );
+	scene.add( pointLight );
 	
 	//projector = new THREE.Projector();
 
@@ -44,25 +59,62 @@ function init(){
 	//if (mode == 2){	document.addEventListener("mousedown",onDocumentMouseDown,false);}
 	window.addEventListener("resize", onWindowResize, false);
 	
-	console.log(plane.geometry);
-	var verts = plane.geometry.vertices;
+	
+	verts = plane.geometry.vertices;
+	/*
 	for (var vert = 0; vert < verts.length; vert++){
-		verts[vert].z = Math.random();
-		console.log(verts[vert]);
+		verts[vert].z = Math.random() / planeSubDiv;  //random terrain noise
+		//console.log(verts[vert]);
 	}
 	plane.verticesNeedUpdate;
+	*/
+	//cycleVerts();
 	
+	verts[0].z = 0.1;
+	//verts[10].z = 0.1;
+	verts[100].z = 0.1;
+	verts[10100].z = 0.1;
+	verts[10200].z = 0.1;
+	/*
+	verts[150].z = 0.1;
+	verts[200].z = 0.1;
+	verts[500].z = 0.1;
+	verts[550].z = 0.1;
+	verts[640].z = 0.1;
+	verts[650].z = 0.1;
+	verts[660].z = 0.1;
+	verts[830].z = 0.1;
+	verts[999].z = 0.1;
+	verts[9999].z = 0.1;
+	verts[10200].z = 0.1;*/
+	plane.verticesNeedUpdate;
 
 }
 
+function cycleVerts(){  //individualy moves one vertex to see the order of the vertexes.
+	//console.log(vertIndex);
+	//console.log(verts);
+	verts[vertIndex].z = 0;
+	vertIndex++;
+	if (vertIndex >= verts.length){
+		vertIndex = 0;
+	}
+	verts[vertIndex].z = 0.3;
+	
+	plane.verticesNeedUpdate;
+}
+
 function render() {
+	//cycleVerts();
 	currentTime = Date.now();
-	deltaTime = (currentTime - lastTime) / 1000; 
+	deltaTime = (currentTime - lastTime) / 1000;
 	lastTime = currentTime;
 	//console.log(deltaTime);
 	requestAnimationFrame(render);	
 	renderer.render(scene, camera);
 }
+
+
 
 function onDocumentMouseDown(event){
 	event.preventDefault();

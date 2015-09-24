@@ -22,7 +22,9 @@
 	
 	var vertIndex = 0;
 	var verts;
-	
+	var gui = new dat.GUI();
+	var savedInt = 0;
+	var GradientGrid;
 
 function init(){
 	scene = new THREE.Scene();
@@ -40,8 +42,8 @@ function init(){
 	scene.add( plane );
 	
 	directionalLight = new THREE.DirectionalLight( 0xf0000f, 1 );
-	directionalLight.position.set( 0, 1, 0 );
-	directionalLight.rotation.y = 0.3;
+	directionalLight.position.set( 10, 10, 10);
+	directionalLight.rotation.x = 0.3;
 	scene.add( directionalLight );
 	
 	pointLight = new THREE.PointLight( 0xff0000, 1, 100 );
@@ -52,7 +54,7 @@ function init(){
 
 	camera.position.z = 2;
 	camera.position.y = -1; //lil hight boost, lil less
-	camera.position.x = 0; //lil hight boost, lil less
+	camera.position.x = 0; 
 	camera.rotation.x = 0.5;
 
 	document.addEventListener("keydown",onDocumentKeyDown,false);
@@ -69,26 +71,101 @@ function init(){
 	plane.verticesNeedUpdate;
 	*/
 	//cycleVerts();
+	Math.seedrandom(0)
+	console.log(Math.random());
 	
-	verts[0].z = 0.1;
-	//verts[10].z = 0.1;
-	verts[100].z = 0.1;
-	verts[10100].z = 0.1;
-	verts[10200].z = 0.1;
-	/*
-	verts[150].z = 0.1;
-	verts[200].z = 0.1;
-	verts[500].z = 0.1;
-	verts[550].z = 0.1;
-	verts[640].z = 0.1;
-	verts[650].z = 0.1;
-	verts[660].z = 0.1;
-	verts[830].z = 0.1;
-	verts[999].z = 0.1;
-	verts[9999].z = 0.1;
-	verts[10200].z = 0.1;*/
-	plane.verticesNeedUpdate;
+	
+	options = {
+		randomSeed: 10
+	};
+	
+	gui.add(options, "randomSeed", 0, 30);
+	
+	//randomMovement();
+	
+	createGradientGrid(11,11);
+	perlinTerrain();
+}
 
+function perlinTerrain(){
+	for (var y = 0; y < planeSubDiv; y++){
+		for (var x = 0; x<planeSubDiv; x++){
+			verts[(y*planeSubDiv) + x].z = perlin(x/(planeSubDiv/10),y/(planeSubDiv/10)) / 10;  //random terrain noise
+			//console.log(verts[vert]);
+		}		
+	}
+	plane.geometry.verticesNeedUpdate = true;
+}
+
+function lerp(a0, a1, w) {
+     return (1.0 - w)*a0 + w*a1;  //lerp two values 
+ }
+ 
+ function dotGridGradient(ix, iy, x, y) {
+ 
+     // Precomputed (or otherwise) gradient vectors at each grid point X,Y
+     //Uhhh Done?
+	 
+     // Compute the distance vector
+	 console.log(x);
+	 console.log(ix);
+     var dx = x - ix;
+     var dy = y - iy;
+ 
+     // Compute the dot-product
+     return (dx*GradientGrid[iy][ix][0] + dy*GradientGrid[iy][ix][1]);
+ }
+ 
+ //need function to create grid of random unit vectors
+ function createGradientGrid(X,Y){
+	 var grid = [];
+	 for (var y = 0; y<Y; y++){
+		 grid.push([]);
+		 for(var x = 0; x<X; x++){
+			 var randAngle = Math.random() * 6.28;
+			 grid[y].push([Math.cos(randAngle),Math.sin(randAngle)]);
+		 }
+	 }
+	 console.log(grid);
+	 GradientGrid = grid;
+ }
+ 
+ // Compute Perlin noise at coordinates x, y
+ function perlin(x, y) {
+ 
+     // Determine grid cell coordinates
+     var x0 = ((x >= 0.0) ? parseInt(x) : parseInt(x) - 1);
+     var x1 = x0 + 1;
+     var y0 = ((y >= 0.0) ? parseInt(y) : parseInt(y) - 1);
+     var y1 = y0 + 1;
+ 
+     // Determine interpolation weights
+     // Could also use higher order polynomial/s-curve here
+     var sx = x - x0;
+     var sy = y - y0;
+ 
+     // Interpolate between grid point gradients
+     var n0, n1, ix0, ix1, value;
+	 console.log(x);
+	 console.log(x0);
+     n0 = dotGridGradient(x0, y0, x, y);
+     n1 = dotGridGradient(x1, y0, x, y);
+     ix0 = lerp(n0, n1, sx);
+     n0 = dotGridGradient(x0, y1, x, y);
+     n1 = dotGridGradient(x1, y1, x, y);
+     ix1 = lerp(n0, n1, sx);
+     value = lerp(ix0, ix1, sy);
+ 
+     return value;
+ }
+
+function randomMovement(){
+	Math.seedrandom(options.randomSeed);
+	for (var vert = 0; vert < verts.length; vert++){
+		verts[vert].z = Math.random() / planeSubDiv;  //random terrain noise
+		//console.log(verts[vert]);
+	}
+	plane.geometry.verticesNeedUpdate = true;
 }
 
 function cycleVerts(){  //individualy moves one vertex to see the order of the vertexes.
@@ -101,8 +178,9 @@ function cycleVerts(){  //individualy moves one vertex to see the order of the v
 	}
 	verts[vertIndex].z = 0.3;
 	
-	plane.verticesNeedUpdate;
+	plane.geometry.verticesNeedUpdate = true;
 }
+
 
 function render() {
 	//cycleVerts();

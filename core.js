@@ -37,16 +37,16 @@ function init(){
 	camControls.addEventListener( 'change', render);
 	
 	geometry = new THREE.PlaneGeometry(planeWidth,planeHeight,planeSubDiv,planeSubDiv);  //range is 0 to 10200 or x0-100 y0-100
-	material = new THREE.MeshBasicMaterial( { color: 0x19A81E } );
+	material = new THREE.MeshLambertMaterial( { color: 0x19A81E , wireframe:true} );
 	plane = new THREE.Mesh( geometry, material );
 	scene.add( plane );
 	
-	directionalLight = new THREE.DirectionalLight( 0xf0000f, 1 );
-	directionalLight.position.set( 10, 10, 10);
-	directionalLight.rotation.x = 0.3;
+	directionalLight = new THREE.DirectionalLight( 0xf0000f, 100 );
+	directionalLight.position.set( 1, 10,1 );
+	directionalLight.rotation.x = 0.8;
 	scene.add( directionalLight );
 	
-	pointLight = new THREE.PointLight( 0xff0000, 1, 100 );
+	pointLight = new THREE.PointLight( 0xff0000, 1, 5 );
 	pointLight.position.set( 0, 0, 2 );
 	scene.add( pointLight );
 	

@@ -9,7 +9,7 @@
 	var plane;
 	var planeWidth = 1;
 	var planeHeight = 1;
-	var planeSubDiv = 10;
+	var planeSubDiv = 100;
 	var lastTime = Date.now();
 	var currentTime = 0;
 	var deltaTime = 0;
@@ -41,6 +41,23 @@ function init(){
 	plane = new THREE.Mesh( geometry, material );
 	scene.add( plane );
 	
+	/*
+	//scene.remove(plane);
+	var geom = new THREE.Geometry(); 
+	geom.vertices.push(
+		new THREE.Vector3( 0,  0, 0 ),
+		new THREE.Vector3( 1, 1.732, 0 ),
+		new THREE.Vector3(  2, 0, 0 )
+	);
+	geom.faces.push( new THREE.Face3( 2,1,0));
+
+	var mat = new THREE.MeshLambertMaterial( { color: 0xffA81E , wireframe:true} );
+
+	var triPlane = new THREE.Mesh(geom, mat);
+	scene.add(triPlane);
+	*/
+
+
 	directionalLight = new THREE.DirectionalLight( 0xf0000f, 100 );
 	directionalLight.position.set( 1, 10,1 );
 	directionalLight.rotation.x = 0.8;
@@ -80,13 +97,24 @@ function init(){
 	};
 	
 	gui.add(options, "randomSeed", 0, 30);
-	
+
+
+
+
 	noise.seed(10);
 	//randomMovement();
 	//createGradientGrid(11,11);
 	//oldPerlin();
-	newPerlin();
-	drawFaceNormal();
+	newPerlin(1);
+	newPerlin(5);
+	newPerlin(10);
+	newPerlin(20);
+	//drawFaceNormal();
+	//triangleSubDivide();
+}
+
+function triangleSubDivide(){
+
 }
 
 function drawFaceNormal(){
@@ -114,12 +142,14 @@ function drawFaceNormal(){
 	}
 }
 
-function newPerlin(){
-	for (var y = 0; y < planeSubDiv; y++){
-		for (var x = 0; x<planeSubDiv; x++){
-			verts[(y*planeSubDiv) + x].z = noise.perlin2(x/(planeSubDiv/1),y/(planeSubDiv/1)) / 10;  //random terrain noise
-			//console.log(verts[vert]);
-		}		
+function newPerlin(oct){
+	if(oct>0){
+		for (var y = 0; y < planeSubDiv; y++){
+			for (var x = 0; x<planeSubDiv; x++){
+				verts[(y*planeSubDiv) + x].z += noise.perlin2(x/(planeSubDiv/oct),y/(planeSubDiv/oct)) / (oct);  //random terrain noise
+				//console.log(verts[vert]);
+			}		
+		}
 	}
 	plane.geometry.verticesNeedUpdate = true;
 }

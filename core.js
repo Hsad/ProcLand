@@ -9,7 +9,7 @@
 	var plane;
 	var planeWidth = 1;
 	var planeHeight = 1;
-	var planeSubDiv = 100;
+	var planeSubDiv = 10;
 	var lastTime = Date.now();
 	var currentTime = 0;
 	var deltaTime = 0;
@@ -86,6 +86,32 @@ function init(){
 	//createGradientGrid(11,11);
 	//oldPerlin();
 	newPerlin();
+	drawFaceNormal();
+}
+
+function drawFaceNormal(){
+	var faces = plane.geometry.faces;
+	var verts = plane.geometry.vertices;
+	for (var f = 0; f<faces.length; f++){
+		var centerx = (verts[ faces[f].a ].x + verts[ faces[f].b ].x + verts[ faces[f].c ].x) / 3;
+		var centery = (verts[ faces[f].a ].y + verts[ faces[f].b ].y + verts[ faces[f].c ].y) / 3;
+		var centerz = (verts[ faces[f].a ].z + verts[ faces[f].b ].z + verts[ faces[f].c ].z) / 3;
+		var center = new THREE.Vector3(centerx, centery, centerz);
+		
+		var ba = new THREE.Vector3();
+		ba.subVectors(verts[faces[f].a], verts[faces[f].b]);
+		var bc = new THREE.Vector3();
+		bc.subVectors(verts[faces[f].c], verts[faces[f].b]);
+		var cross = new THREE.Vector3();
+		cross.crossVectors(ba,bc);
+		cross.multiplyScalar(10);
+		cross.add(center);
+		
+		var lineGeo = new THREE.Geometry();
+		lineGeo.vertices.push(center, cross);
+		var line = new THREE.Line(lineGeo);
+		scene.add(line);
+	}
 }
 
 function newPerlin(){

@@ -81,13 +81,24 @@ function init(){
 	
 	gui.add(options, "randomSeed", 0, 30);
 	
+	noise.seed(10);
 	//randomMovement();
-	
-	createGradientGrid(11,11);
-	perlinTerrain();
+	//createGradientGrid(11,11);
+	//oldPerlin();
+	newPerlin();
 }
 
-function perlinTerrain(){
+function newPerlin(){
+	for (var y = 0; y < planeSubDiv; y++){
+		for (var x = 0; x<planeSubDiv; x++){
+			verts[(y*planeSubDiv) + x].z = noise.perlin2(x/(planeSubDiv/1),y/(planeSubDiv/1)) / 10;  //random terrain noise
+			//console.log(verts[vert]);
+		}		
+	}
+	plane.geometry.verticesNeedUpdate = true;
+}
+
+function oldPerlin(){
 	for (var y = 0; y < planeSubDiv; y++){
 		for (var x = 0; x<planeSubDiv; x++){
 			verts[(y*planeSubDiv) + x].z = perlin(x/(planeSubDiv/10),y/(planeSubDiv/10)) / 10;  //random terrain noise
@@ -96,6 +107,7 @@ function perlinTerrain(){
 	}
 	plane.geometry.verticesNeedUpdate = true;
 }
+
 
 function lerp(a0, a1, w) {
      return (1.0 - w)*a0 + w*a1;  //lerp two values 
@@ -129,6 +141,7 @@ function lerp(a0, a1, w) {
 	 console.log(grid);
 	 GradientGrid = grid;
  }
+ 
  
  // Compute Perlin noise at coordinates x, y
  function perlin(x, y) {

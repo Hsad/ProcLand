@@ -41,21 +41,20 @@ function init(){
 	plane = new THREE.Mesh( geometry, material );
 	scene.add( plane );
 	
-	/*
-	//scene.remove(plane);
+	//scene.remove(plane);  //////////////////////IM THE REASON THE PLANE ISN"T SHOWING///////
 	var geom = new THREE.Geometry(); 
 	geom.vertices.push(
-		new THREE.Vector3( 0,  0, 0 ),
-		new THREE.Vector3( 1, 1.732, 0 ),
-		new THREE.Vector3(  2, 0, 0 )
+		new THREE.Vector3( -1,  -.866, 0 ),
+		new THREE.Vector3( 0, .866, 0 ),
+		new THREE.Vector3(  1, -.866, 0 )
 	);
 	geom.faces.push( new THREE.Face3( 2,1,0));
 
-	var mat = new THREE.MeshLambertMaterial( { color: 0xffA81E , wireframe:true} );
+	var mat = new THREE.MeshBasicMaterial( { color: 0xffA81E , wireframe:true} );
 
 	var triPlane = new THREE.Mesh(geom, mat);
 	scene.add(triPlane);
-	*/
+	
 
 
 	directionalLight = new THREE.DirectionalLight( 0xf0000f, 100 );
@@ -109,14 +108,63 @@ function init(){
 	newPerlin(5);
 	newPerlin(10);
 	newPerlin(20);
+	//plane.geometry.computeFaceNormals();
 	//drawFaceNormal();
-	//triangleSubDivide();
+	triangleSubDivide(triPlane);
 }
 
-function triangleSubDivide(){
+function triangleSubDivide(mesh){
+	//for every face
+	//get verts of the face
+	//find new middle verts
+	//create 4 faces from those verts
+	//add those faces to the mesh, maybe remove old face, or just readjust verts
+	var faces = mesh.geometry.faces;
+	var verts = mesh.geometry.vertices;
+	var numFaces = faces.length;
+	for (var f = 0; f<numFaces; f++){
+		console.log("Sub dividing");
+		//sub divide edges, create new vertices
+		var vert1 = verts[faces[f].a];
+		var vert2 = verts[faces[f].b];
+		var vert3 = verts[faces[f].c];
+		var vert4 = new THREE.Vector3();
+		var vert5 = new THREE.Vector3();
+		var vert6 = new THREE.Vector3();
+		vert4.addVectors(vert1, vert2);
+		vert5.addVectors(vert2, vert3);
+		vert6.addVectors(vert3, vert1);
+		vert4.divideScalar(2);
+		vert5.divideScalar(2);
+		vert6.divideScalar(2);
+		//track vertex index
+		var ind1 = faces[f].a;
+		var ind2 = faces[f].b;
+		var ind3 = faces[f].c;
+		var ind4 = mesh.geometry.vertices.length;
+		var ind5 = mesh.geometry.vertices.length;
+		var ind6 = mesh.geometry.vertices.length;
+		mesh.geometry.vertices.push(vert4);
+		mesh.geometry.vertices.push(vert5);
+		mesh.geometry.vertices.push(vert6);
 
+		mesh.geometry.verticesNeedUpdate = true;
+		//set new faces
+		//faces[f].a = ind1;
+		//faces[f].b = ind4;
+		//faces[f].c = ind6;
+		var face1 = new THREE.Face3(ind1, ind4, ind6);
+		var face2 = new THREE.Face3(ind4, ind2, ind5);
+		var face3 = new THREE.Face3(ind6, ind5, ind3);
+		var face4 = new THREE.Face3(ind5, ind6, ind4);
+		mesh.geometry.faces.push(face2);
+		mesh.geometry.faces.push(face3);
+		mesh.geometry.faces.push(face4);
+		//update
+		mesh.geometry.elementsNeedUpdate = true;
+	}
 }
-
+//might want to look into using geo.computeFaceNormals()
 function drawFaceNormal(){
 	var faces = plane.geometry.faces;
 	var verts = plane.geometry.vertices;

@@ -10,6 +10,7 @@
 	var planeWidth = 1;
 	var planeHeight = 1;
 	var planeSubDiv = 100;
+	var planeVertQuant = planeSubDiv+1;
 	var lastTime = Date.now();
 	var currentTime = 0;
 	var deltaTime = 0;
@@ -81,14 +82,14 @@ function init(){
 	verts = plane.geometry.vertices;
 	/*
 	for (var vert = 0; vert < verts.length; vert++){
-		verts[vert].z = Math.random() / planeSubDiv;  //random terrain noise
+		verts[vert].z = Math.random() / planeVertQuant;  //random terrain noise
 		//console.log(verts[vert]);
 	}
 	plane.verticesNeedUpdate;
 	*/
 	//cycleVerts();
 	Math.seedrandom(0)
-	console.log(Math.random());
+	//console.log(Math.random());
 	
 	
 	options = {
@@ -107,10 +108,44 @@ function init(){
 	newPerlin(1);
 	newPerlin(5);
 	newPerlin(10);
-	newPerlin(20);
+	//newPerlin(20);
 	//plane.geometry.computeFaceNormals();
 	//drawFaceNormal();
-	triangleSubDivide(triPlane);
+	//triangleSubDivide(triPlane);
+	//sine();
+	//linear();
+}
+
+function linear(){
+	for (var y = 0; y < planeVertQuant; y++){
+		for (var x = 0; x<planeVertQuant; x++){
+			console.log("X");
+			console.log(x);
+			console.log("Y");
+			console.log(y);
+			console.log("Index");
+			console.log((y*planeVertQuant) + x);
+			console.log("OutValue");
+			console.log((y));
+			console.log("planeVertQuant");
+			console.log(planeVertQuant);
+			console.log("y*planeVertQuant");			
+			console.log(y*planeVertQuant);
+			console.log("y*planeVertQuant + x");
+			console.log(y*planeVertQuant + x);
+			verts[(y*planeVertQuant) + x].z = (y)/20;
+			//console.log(verts[vert]);
+		}		
+	}
+}
+
+function sine(){
+	for (var y = 0; y < planeVertQuant; y++){
+		for (var x = 0; x<planeVertQuant; x++){
+			verts[(y*planeVertQuant) + x].z += Math.sin(x) / 40;
+			//console.log(verts[vert]);
+		}		
+	}
 }
 
 function triangleSubDivide(mesh){
@@ -192,9 +227,9 @@ function drawFaceNormal(){
 
 function newPerlin(oct){
 	if(oct>0){
-		for (var y = 0; y < planeSubDiv; y++){
-			for (var x = 0; x<planeSubDiv; x++){
-				verts[(y*planeSubDiv) + x].z += noise.perlin2(x/(planeSubDiv/oct),y/(planeSubDiv/oct)) / (oct);  //random terrain noise
+		for (var y = 0; y < planeVertQuant; y++){
+			for (var x = 0; x<planeVertQuant; x++){
+				verts[(y*planeVertQuant) + x].z += noise.simplex2(x/(planeVertQuant/oct), y/(planeVertQuant/oct)) / (oct*5);  //random terrain noise
 				//console.log(verts[vert]);
 			}		
 		}
@@ -203,9 +238,9 @@ function newPerlin(oct){
 }
 
 function oldPerlin(){
-	for (var y = 0; y < planeSubDiv; y++){
-		for (var x = 0; x<planeSubDiv; x++){
-			verts[(y*planeSubDiv) + x].z = perlin(x/(planeSubDiv/10),y/(planeSubDiv/10)) / 10;  //random terrain noise
+	for (var y = 0; y < planeVertQuant; y++){
+		for (var x = 0; x<planeVertQuant; x++){
+			verts[(y*planeVertQuant) + x].z = perlin(x/(planeVertQuant/10),y/(planeVertQuant/10)) / 10;  //random terrain noise
 			//console.log(verts[vert]);
 		}		
 	}
@@ -279,7 +314,7 @@ function lerp(a0, a1, w) {
 function randomMovement(){
 	Math.seedrandom(options.randomSeed);
 	for (var vert = 0; vert < verts.length; vert++){
-		verts[vert].z = Math.random() / planeSubDiv;  //random terrain noise
+		verts[vert].z = Math.random() / planeVertQuant;  //random terrain noise
 		//console.log(verts[vert]);
 	}
 	plane.geometry.verticesNeedUpdate = true;

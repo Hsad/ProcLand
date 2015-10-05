@@ -88,7 +88,7 @@ function init(){
 	plane.verticesNeedUpdate;
 	*/
 	//cycleVerts();
-	Math.seedrandom(0)
+	Math.seedrandom(2)
 	//console.log(Math.random());
 	
 	
@@ -105,15 +105,22 @@ function init(){
 	//randomMovement();
 	//createGradientGrid(11,11);
 	//oldPerlin();
-	newPerlin(1);
+	//newPerlin(1);
 	newPerlin(5);
 	newPerlin(10);
-	//newPerlin(20);
+	newPerlin(20);
+	water(0);
 	//plane.geometry.computeFaceNormals();
 	//drawFaceNormal();
+	console.log(triPlane.geometry.faces[0]);
+	triangleSubDivide(triPlane);
+	triangleSubDivide(triPlane);
+	triangleSubDivide(triPlane);
+	//triangleSubDivide(triPlane);
+	//triangleSubDivide(triPlane);
 	//triangleSubDivide(triPlane);
 	//sine();
-	//linear();
+	//linear();  //Debug champ Function
 }
 
 function linear(){
@@ -148,6 +155,12 @@ function sine(){
 	}
 }
 
+function dot(vect){
+	var Dot = new THREE.Mesh(new THREE.SphereGeometry( 0.01, 6, 6 ), new THREE.MeshBasicMaterial( {color: 0xffff00}));
+	Dot.geometry.translate(vect.x, vect.y, vect.z);
+	scene.add(Dot);
+}
+
 function triangleSubDivide(mesh){
 	//for every face
 	//get verts of the face
@@ -157,8 +170,8 @@ function triangleSubDivide(mesh){
 	var faces = mesh.geometry.faces;
 	var verts = mesh.geometry.vertices;
 	var numFaces = faces.length;
+	
 	for (var f = 0; f<numFaces; f++){
-		console.log("Sub dividing");
 		//sub divide edges, create new vertices
 		var vert1 = verts[faces[f].a];
 		var vert2 = verts[faces[f].b];
@@ -172,29 +185,42 @@ function triangleSubDivide(mesh){
 		vert4.divideScalar(2);
 		vert5.divideScalar(2);
 		vert6.divideScalar(2);
+		//need to find the twin vertices of the inside triangle
+		//also need to detect when the current face is one of the inside triangles
+		//
+		
+		
+		//Modify New vert heights
+		vert4.setZ(vert4.z + (Math.random()-0.5)/numFaces);
+		vert5.setZ(vert5.z + (Math.random()-0.5)/numFaces);
+		vert6.setZ(vert6.z + (Math.random()-0.5)/numFaces);
+		
 		//track vertex index
 		var ind1 = faces[f].a;
 		var ind2 = faces[f].b;
 		var ind3 = faces[f].c;
-		var ind4 = mesh.geometry.vertices.length;
-		var ind5 = mesh.geometry.vertices.length;
-		var ind6 = mesh.geometry.vertices.length;
+		var ind4 = mesh.geometry.vertices.length;   //////////////////
 		mesh.geometry.vertices.push(vert4);
-		mesh.geometry.vertices.push(vert5);
-		mesh.geometry.vertices.push(vert6);
-
+		var ind5 = mesh.geometry.vertices.length;   //Dont organize this
+		mesh.geometry.vertices.push(vert5);           //ya dingus
+		var ind6 = mesh.geometry.vertices.length;		
+		mesh.geometry.vertices.push(vert6);        /////////////////
+		
 		mesh.geometry.verticesNeedUpdate = true;
 		//set new faces
-		//faces[f].a = ind1;
-		//faces[f].b = ind4;
-		//faces[f].c = ind6;
-		var face1 = new THREE.Face3(ind1, ind4, ind6);
+		faces[f].a = ind1;
+		faces[f].b = ind4;
+		faces[f].c = ind6;
+		//var face1 = new THREE.Face3(ind1, ind4, ind6);
 		var face2 = new THREE.Face3(ind4, ind2, ind5);
 		var face3 = new THREE.Face3(ind6, ind5, ind3);
 		var face4 = new THREE.Face3(ind5, ind6, ind4);
 		mesh.geometry.faces.push(face2);
 		mesh.geometry.faces.push(face3);
 		mesh.geometry.faces.push(face4);
+		
+		
+		
 		//update
 		mesh.geometry.elementsNeedUpdate = true;
 	}
@@ -222,6 +248,16 @@ function drawFaceNormal(){
 		lineGeo.vertices.push(center, cross);
 		var line = new THREE.Line(lineGeo);
 		scene.add(line);
+	}
+}
+
+function water(height){
+	for (var y = 0; y < planeVertQuant; y++){
+		for (var x = 0; x<planeVertQuant; x++){
+			if (verts[(y*planeVertQuant) + x].z < height){
+				verts[(y*planeVertQuant) + x].z = height;
+			}
+		}		
 	}
 }
 

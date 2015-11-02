@@ -80,27 +80,15 @@ function init(){
 	
 	
 	verts = plane.geometry.vertices;
-	/*
-	for (var vert = 0; vert < verts.length; vert++){
-		verts[vert].z = Math.random() / planeVertQuant;  //random terrain noise
-		//console.log(verts[vert]);
-	}
-	plane.verticesNeedUpdate;
-	*/
 	//cycleVerts();
 	Math.seedrandom(2)
 	//console.log(Math.random());
-	
-	
 	options = {
 		randomSeed: 10
 	};
-	
 	gui.add(options, "randomSeed", 0, 30);
 
-
-
-
+	//perlin stuff
 	noise.seed(10);
 	//randomMovement();
 	//createGradientGrid(11,11);
@@ -112,15 +100,79 @@ function init(){
 	water(0);
 	//plane.geometry.computeFaceNormals();
 	//drawFaceNormal();
-	console.log(triPlane.geometry.faces[0]);
-	triangleSubDivide(triPlane);
-	triangleSubDivide(triPlane);
-	triangleSubDivide(triPlane);
-	//triangleSubDivide(triPlane);
-	//triangleSubDivide(triPlane);
-	//triangleSubDivide(triPlane);
 	//sine();
 	//linear();  //Debug champ Function
+	//triangle fractal stuff
+	console.log(triPlane.geometry.faces);
+  //triangleSubDivide(triPlane);
+  //triangleSubDivide(triPlane);
+	//triangleSubDivide(triPlane);
+	//triangleSubDivide(triPlane);
+	//triangleSubDivide(triPlane);
+	//triangleSubDivide(triPlane);
+	var edge0 = new Edge(1, 0);
+	var edge1 = new Edge(2, 1);
+	var edge2 = new Edge(0, 2);
+
+	edge0.leftAdjEdge = edge1;
+	edge1.leftAdjEdge = edge2;
+	edge2.leftAdjEdge = edge0;
+
+	var edgeAccess = edge0;
+
+	//console.log(triPlane);
+	//console.log(triPlane.geometry.faces);
+	//console.log("edgeAccess1");
+	//console.log(edgeAccess);
+	edgeAccess = subDivideFace(triPlane, edgeAccess);
+	//console.log(triPlane);
+	//console.log(triPlane.geometry.faces.length);
+	//console.log(triPlane.geometry.vertices.length);
+	//console.log("edgeAccess2");
+	//console.log(edgeAccess);
+	edgeAccess = subDivideFace(triPlane, edgeAccess);
+	//console.log(triPlane);
+	//console.log(triPlane.geometry.faces.length);
+	//console.log(triPlane.geometry.vertices.length);
+	//console.log("edgeAccess3");
+	//console.log(edgeAccess);
+	edgeAccess = subDivideFace(triPlane, edgeAccess);
+	//console.log(triPlane);
+	//console.log(triPlane.geometry.faces.length);
+	//console.log(triPlane.geometry.vertices.length);
+	//console.log("edgeAccess4");
+	//console.log(edgeAccess);
+	edgeAccess = subDivideFace(triPlane, edgeAccess);
+	//console.log(triPlane);
+	//console.log(triPlane.geometry.faces.length);
+	//console.log(triPlane.geometry.vertices.length);
+	//console.log("edgeAccess5");
+	//console.log(edgeAccess);
+	edgeAccess = subDivideFace(triPlane, edgeAccess);
+
+}
+
+function c(pri){
+	console.log(pri);
+}
+
+function subDivideFace(geo, edgeAccess){
+	//console.log(geo);
+	var newFaces = edgeAccess.subDivideFace(geo.geometry);
+	geo.geometry.faces = newFaces;
+	geo.geometry.verticesNeedUpdate = true;
+	geo.geometry.elementsNeedUpdate = true;
+	//console.log(geo);
+	//set the last access to the old one
+	//console.log(edgeAccess);
+	var newAccess = edgeAccess.subDivRight;
+	//console.log("assessNode after first calc");
+	//console.log(edgeAccess);
+	//should probably do some sort of garbage collection on the old nodes
+	//garbage collect on edgeAccess here
+	edgeAccess = newAccess;
+	//console.log(edgeAccess);
+	return newAccess;
 }
 
 function linear(){

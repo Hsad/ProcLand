@@ -37,17 +37,19 @@ function init(){
 	camControls = new THREE.OrbitControls(camera);
 	camControls.addEventListener( 'change', render);
 	
+	//perlin Plane set up
 	geometry = new THREE.PlaneGeometry(planeWidth,planeHeight,planeSubDiv,planeSubDiv);  //range is 0 to 10200 or x0-100 y0-100
 	material = new THREE.MeshLambertMaterial( { color: 0x19A81E , wireframe:true} );
 	plane = new THREE.Mesh( geometry, material );
 	scene.add( plane );
 	
 	//scene.remove(plane);  //////////////////////IM THE REASON THE PLANE ISN"T SHOWING///////
+	//Tri Plane set up
 	var geom = new THREE.Geometry(); 
 	geom.vertices.push(
-		new THREE.Vector3( -1,  -.866, 0 ),
-		new THREE.Vector3( 0, .866, 0 ),
-		new THREE.Vector3(  1, -.866, 0 )
+		new THREE.Vector3( -2.5,  -.866, 0 ),
+		new THREE.Vector3( -1.5, .866, 0 ),
+		new THREE.Vector3(  -0.5, -.866, 0 )
 	);
 	geom.faces.push( new THREE.Face3( 2,1,0));
 
@@ -56,8 +58,27 @@ function init(){
 	var triPlane = new THREE.Mesh(geom, mat);
 	scene.add(triPlane);
 	
+	//MArching Cubes Setup
+	//var materials = generateMaterials();
+	//var current_material = "shiny";
+	//var marchMat = new THREE.MeshBasicMaterial( { color: 0x88ff1E , wireframe:true} );
+	var marchMat = new THREE.MeshPhongMaterial( 
+			{ color: 0x000000, specular: 0x111111, shininess: 1, shading: THREE.FlatShading } );
+	var resolution = 28;
 
+	             //not sure why UV and color are set as true then false
+	var effect = new THREE.MarchingCubes( resolution, marchMat/*, true, true*/ );
+	effect.position.set( 0, 0, 0 );
+	effect.scale.set( 700, 700, 700 );
 
+	effect.enableUvs = false;
+	effect.enableColors = false;
+
+	scene.add( effect );
+	effect.addBall(1,1,1,0.5,0.1);
+	effect.addPlaneY(2,12);
+
+	//Other stuff
 	directionalLight = new THREE.DirectionalLight( 0xf0000f, 100 );
 	directionalLight.position.set( 1, 10,1 );
 	directionalLight.rotation.x = 0.8;
@@ -83,73 +104,74 @@ function init(){
 	//cycleVerts();
 	Math.seedrandom(2)
 	//console.log(Math.random());
-	options = {
-		randomSeed: 10
-	};
-	gui.add(options, "randomSeed", 0, 30);
+	
+	//options = {
+	//	randomSeed: 10
+	//};
+	//gui.add(options, "randomSeed", 0, 30);
 
 	//perlin stuff
 	noise.seed(10);
-	//randomMovement();
-	//createGradientGrid(11,11);
-	//oldPerlin();
-	//newPerlin(1);
+
 	newPerlin(5);
 	newPerlin(10);
 	newPerlin(20);
-	water(0);
-	//plane.geometry.computeFaceNormals();
-	//drawFaceNormal();
-	//sine();
-	//linear();  //Debug champ Function
-	//triangle fractal stuff
-	console.log(triPlane.geometry.faces);
-  //triangleSubDivide(triPlane);
-  //triangleSubDivide(triPlane);
-	//triangleSubDivide(triPlane);
-	//triangleSubDivide(triPlane);
-	//triangleSubDivide(triPlane);
-	//triangleSubDivide(triPlane);
-	var edge0 = new Edge(1, 0);
-	var edge1 = new Edge(2, 1);
-	var edge2 = new Edge(0, 2);
+	water(-0.02);
 
-	edge0.leftAdjEdge = edge1;
-	edge1.leftAdjEdge = edge2;
-	edge2.leftAdjEdge = edge0;
+	fractalDivide(triPlane, 7);
+}
 
-	var edgeAccess = edge0;
+//for the normal fractal, i need a func that subdivides once, then modifies the new verts
+//then continues to subdivide
+function fractalDivide(tri, numDiv){
+	var edgeAccess = buildEdgeNodesOfTri();
+	for (var n = 0; n < numDiv; n++){
+		edgeAccess = subDivideFace(tri, edgeAccess);
+		var x0 = getTriVertCountAfterNDivisions(n);
+		var x1 = getTriVertCountAfterNDivisions(n+1);
 
-	//console.log(triPlane);
-	//console.log(triPlane.geometry.faces);
-	//console.log("edgeAccess1");
-	//console.log(edgeAccess);
-	edgeAccess = subDivideFace(triPlane, edgeAccess);
-	//console.log(triPlane);
-	//console.log(triPlane.geometry.faces.length);
-	//console.log(triPlane.geometry.vertices.length);
-	//console.log("edgeAccess2");
-	//console.log(edgeAccess);
-	edgeAccess = subDivideFace(triPlane, edgeAccess);
-	//console.log(triPlane);
-	//console.log(triPlane.geometry.faces.length);
-	//console.log(triPlane.geometry.vertices.length);
-	//console.log("edgeAccess3");
-	//console.log(edgeAccess);
-	edgeAccess = subDivideFace(triPlane, edgeAccess);
-	//console.log(triPlane);
-	//console.log(triPlane.geometry.faces.length);
-	//console.log(triPlane.geometry.vertices.length);
-	//console.log("edgeAccess4");
-	//console.log(edgeAccess);
-	edgeAccess = subDivideFace(triPlane, edgeAccess);
-	//console.log(triPlane);
-	//console.log(triPlane.geometry.faces.length);
-	//console.log(triPlane.geometry.vertices.length);
-	//console.log("edgeAccess5");
-	//console.log(edgeAccess);
-	edgeAccess = subDivideFace(triPlane, edgeAccess);
+		for (var x = x0; x < x1; x++){
+			//the logrithmic modification of the verts is the secret sauce 
+			//1.7 for mountains, 2.3 for rolling hills
+			tri.geometry.vertices[x].z += (Math.random() - 0.5) / (Math.pow(1.9, n+1));
+		}
+	}
+	tri.geometry.verticesNeedUpdate = true;
+}
+  
+  
+function getTriVertCountAfterNDivisions(numOfDiv){
+	if (numOfDiv == 0){
+		return 3;
+	}else{
+		var lastCount = getTriVertCountAfterNDivisions(numOfDiv - 1);
+		var numVertsOnBase = Math.pow(2, numOfDiv-1) + 1;
+		return (lastCount * 4) - (numVertsOnBase * 3);		
+	}
+}
 
+function randomlyMoveTriVerts(triPlane){
+	for (var x = 0; x < triPlane.geometry.vertices.length; x++){
+		triPlane.geometry.vertices[x].z += Math.random() / 10;
+	}
+}
+
+function subDivideTriNTimes(GeoObj, N){
+	var edgeAccess = buildEdgeNodesOfTri();
+	for (var x = 0; x < N; x++){
+		edgeAccess = subDivideFace(GeoObj, edgeAccess);
+		c(GeoObj.geometry.vertices.length);
+	}
+}
+
+function buildEdgeNodesOfTri(){
+	var e1 = new Edge(1, 0);
+	var e2 = new Edge(2, 1);	
+	var e3 = new Edge(0, 2);
+	e1.leftAdjEdge = e2;
+	e2.leftAdjEdge = e3;
+	e3.leftAdjEdge = e1;
+	return e1;
 }
 
 function c(pri){
@@ -157,21 +179,15 @@ function c(pri){
 }
 
 function subDivideFace(geo, edgeAccess){
-	//console.log(geo);
 	var newFaces = edgeAccess.subDivideFace(geo.geometry);
 	geo.geometry.faces = newFaces;
 	geo.geometry.verticesNeedUpdate = true;
 	geo.geometry.elementsNeedUpdate = true;
-	//console.log(geo);
 	//set the last access to the old one
-	//console.log(edgeAccess);
 	var newAccess = edgeAccess.subDivRight;
-	//console.log("assessNode after first calc");
-	//console.log(edgeAccess);
 	//should probably do some sort of garbage collection on the old nodes
 	//garbage collect on edgeAccess here
 	edgeAccess = newAccess;
-	//console.log(edgeAccess);
 	return newAccess;
 }
 

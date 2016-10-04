@@ -14,7 +14,6 @@ function c(p){
 
 Edge.prototype.divideEdge = function(Geo){
 	//c("divideEdge");
-	//jconsole.log("divideing edges");
 	//if there is no opposite edge, or the opposite edge has not been divided
 	if(this.opposite == null || 
 			(this.opposite.subDivLeft == null && this.opposite.subDivRight == null)){
@@ -25,7 +24,6 @@ Edge.prototype.divideEdge = function(Geo){
 		newVert.divideScalar(2); 
 		//get its future index location
 		var newVertIndex = Geo.vertices.length; 
-		//c("++++++++++adding vertex to Geo");
 		//add it to the vert array
 		Geo.vertices.push(newVert);
 		this.createNewSubEdge(newVertIndex);
@@ -91,9 +89,6 @@ Edge.prototype.create4FacesFromSubdivision = function(){
 	var face3 = new THREE.Face3(v1, v3, v5);
 
 	this.createAndConnectEdges();
-	//console.log("Sub div after connection");
-	//console.log(this.subDivRight);
-	//console.log( [face0, face1, face2, face3]);
 	return [face0, face1, face2, face3];
 
 }
@@ -137,12 +132,6 @@ Edge.prototype.createAndConnectEdges = function(){
 	this.linkOppEdges(n1, n3);
 	this.linkOppEdges(n2, n4);
 
-
-	//console.log("Printing new edges");
-	//console.log(o0);
-	//console.log(n3);
-	//console.log(n4);
-	//console.log(n5);
 }
 
 Edge.prototype.linkAdjEdges = function(a, b, c){
@@ -150,9 +139,6 @@ Edge.prototype.linkAdjEdges = function(a, b, c){
 	a.leftAdjEdge = b;
 	b.leftAdjEdge = c;
 	c.leftAdjEdge = a;
-	//abc[0].leftAdjEdge = abc[1];
-	//abc[1].leftAdjEdge = abc[2];
-	//abc[2].leftAdjEdge = abc[0];
 }
 
 Edge.prototype.linkOppEdges = function(a, b){
@@ -164,7 +150,6 @@ Edge.prototype.linkOppEdges = function(a, b){
 //take in geo so new verticies can be added to it.
 Edge.prototype.subDivideFace = function(geo){
 	//console.log("Subdivideing faces");
-	//console.log(geo);
 	//asserts
 	if ((this.subDivLeft == null && this.subDivRight != null) ||
 			(this.subDivRight == null && this.subDivLeft != null)){
@@ -172,11 +157,7 @@ Edge.prototype.subDivideFace = function(geo){
 	}
 	if (this.leftAdjEdge == null || this.leftAdjEdge.leftAdjEdge == null){
 		console.log("DONT HAVE AN ADJACENT EDGE");
-		//console.log(this);
 	}
-
-	
-	//console.log("past first asserts");
 	//the edge has already been divided, therefore its face has been divided
 	//return empty list
 	if (this.subDivLeft != null && this.subDivRight != null){
@@ -189,11 +170,7 @@ Edge.prototype.subDivideFace = function(geo){
 		this.leftAdjEdge.leftAdjEdge.divideEdge(geo);
 	}
 	var triList = this.create4FacesFromSubdivision();
-	//console.log("triList after face Division");
-	//console.log(triList);
 	triList = triList.concat(this.subDivFaceOfAdjOpposites(geo));
-	//console.log("triList after recursive Division");
-	//console.log(triList);
 	//merge all the newly linked subdivisions sets with their opposite 
 	//for each tri, link subdivisions, with opposite subdivisons
 	//call that on all adjacent
@@ -205,15 +182,9 @@ Edge.prototype.linkSubDivOfAdj = function(){
 	//console.log("Linkin adj");
 	//can assume that the current edge has already been linked
 	//check that the adjacent edge was not hooked up
-	//c("printing this");
-	//c(this);
-	//c("printing this.leftAdjEdge");
-	//c(this.leftAdjEdge);
 	if (this.leftAdjEdge.linkSubDivOfOppo()){
 		this.leftAdjEdge.opposite.linkSubDivOfAdj();
 	}
-	//c("printing this.leftAdjEdge.leftAdjEdge");
-	//c(this.leftAdjEdge.leftAdjEdge);
 	if (this.leftAdjEdge.leftAdjEdge.linkSubDivOfOppo()){
 		this.leftAdjEdge.leftAdjEdge.opposite.linkSubDivOfAdj();
 	}
@@ -221,20 +192,9 @@ Edge.prototype.linkSubDivOfAdj = function(){
 
 Edge.prototype.linkSubDivOfOppo = function(){
 	//console.log("Linkin oppo");
-	//c("printing this after");
-	//c(this);
 	if ((this.opposite != null) && (this.opposite.subDivLeft != null) &&
 			(this.subDivLeft.opposite == null || this.subDivRight.opposite == null)
 			){
-		//c("setting adjacent opposite to eachother");
-		//var opR = this.opposite.subDivRight;
-		//var opL = this.opposite.subDivLeft;
-		//var R = this.subDivRight;
-		//var L = this.subDivLeft;
-		//this.subDivLeft.opposite = opR;
-		//this.subDivRight.opposite = opL;
-		//this.opposite.subDivLeft.opposite = R;
-		//this.opposite.subDivRight.opposite = L;
 		this.subDivLeft.opposite = this.opposite.subDivRight;
 		this.subDivRight.opposite = this.opposite.subDivLeft;
 		this.opposite.subDivLeft.opposite = this.subDivRight;
@@ -250,21 +210,13 @@ Edge.prototype.subDivFaceOfAdjOpposites = function(geo){
 	//need to check if it even needs to be divided
 	var triList1 = [];
 	var triList2 = [];
-	//console.log("printing adj opposite from inside subDivFaceOfAdjOpposites");
-	//console.log(this.leftAdjEdge.opposite);
-	//console.log(this.leftAdjEdge.leftAdjEdge.opposite);
 	if (this.leftAdjEdge.opposite != null && this.leftAdjEdge.opposite.subDivLeft == null){
 		triList1 = this.leftAdjEdge.opposite.subDivideFace(geo);
-		//console.log("trilist 1");
-		//console.log(triList1);
 	}
 	if (this.leftAdjEdge.leftAdjEdge.opposite != null
 			&& this.leftAdjEdge.leftAdjEdge.opposite.subDivLeft == null){
 		triList2 = this.leftAdjEdge.leftAdjEdge.opposite.subDivideFace(geo);
-		//console.log("trilist 2");
-		//console.log(triList2);
 	}
 	triList1 = triList1.concat(triList2);
-	//console.log(triList1);
 	return triList1;
 }

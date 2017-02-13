@@ -102,8 +102,10 @@ function init(){
 	
 	verts = plane.geometry.vertices;
 	//cycleVerts();
-	Math.seedrandom(2)
+	var timeMilli = new Date();
+	Math.seedrandom(timeMilli.getMilliseconds());
 	//console.log(Math.random());
+	console.log("UpdatesAdded");
 	
 	//options = {
 	//	randomSeed: 10
@@ -111,7 +113,7 @@ function init(){
 	//gui.add(options, "randomSeed", 0, 30);
 
 	//perlin stuff
-	noise.seed(10);
+	noise.seed(Math.random());
 
 	newPerlin(5);
 	newPerlin(10);
@@ -416,7 +418,7 @@ function lerp(a0, a1, w) {
  }
 
 function randomMovement(){
-	Math.seedrandom(options.randomSeed);
+	//Math.seedrandom(options.randomSeed);
 	for (var vert = 0; vert < verts.length; vert++){
 		verts[vert].z = Math.random() / planeVertQuant;  //random terrain noise
 		//console.log(verts[vert]);
@@ -582,3 +584,4 @@ function onDocumentKeyDown(event){
 
 
 
+>>>>>>> be906e87697dd7f1fae97d49fe7c353b8519f92b
